@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "filter-basic", "filter-basic\filter-basic.csproj", "{FD1C5A69-002C-459F-872F-B4E8BA92D54A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FD1C5A69-002C-459F-872F-B4E8BA92D54A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD1C5A69-002C-459F-872F-B4E8BA92D54A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD1C5A69-002C-459F-872F-B4E8BA92D54A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD1C5A69-002C-459F-872F-B4E8BA92D54A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
