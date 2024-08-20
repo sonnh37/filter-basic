@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:filter_basic"
         mc:Ignorable="d"
-        Title="File Manager" Height="300" Width="1200">
+        Title="File Manager" Height="600" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        >
     
     <Grid>
         <Grid.ColumnDefinitions>
@@ -43,14 +45,16 @@
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                     <TextBlock Text="Filename Filter:" VerticalAlignment="Center"/>
                     <TextBox Width="150" Margin="5,0" Text="{Binding FilenameFilter, UpdateSourceTrigger=PropertyChanged}" TextChanged="FilenameFilter_TextChanged"/>
-                    <CheckBox Content="Thumbnails" Margin="10,0,0,0"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                     <TextBlock Text="Rename:" VerticalAlignment="Center"/>
-                    <RadioButton Content="Files" GroupName="RenameOptions" Margin="5,0"/>
-                    <RadioButton Content="Folders" GroupName="RenameOptions"/>
-                    <CheckBox Content="Enable" Margin="10,0"/>
+                    <Button Content="Rename" Width="75" Margin="10,0" Click="RenameButton_Click"/>
+                    <Button Content="Apply" Width="75" Margin="10,0" Click="ApplyButton_Click"/>
+                </StackPanel>
+                
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                    <TextBlock Text="Edit:" VerticalAlignment="Center"/>
                     <Button Content="Copy" Width="75" Margin="10,0" Click="CopyButton_Click"/>
                     <Button Content="Move" Width="75" Click="MoveButton_Click"/>
                     <Button Content="Show Selected Files" Margin="10,0" Width="150" Click="ShowSelectedFiles_Click"/>
@@ -58,7 +62,7 @@
             </StackPanel>
 
             <!-- File List -->
-            <ListView Grid.Row="1" Margin="0,5,0,0" ItemsSource="{Binding _filesTemporary}">
+            <ListView Grid.Row="1" MouseDoubleClick="ListView_MouseDoubleClick" Margin="0,5,0,0" ItemsSource="{Binding _filesTemporary}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header=" " Width="30">

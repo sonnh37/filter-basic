@@ -5,16 +5,19 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:filter_basic.Dialogs"
         mc:Ignorable="d"
-        Title="Selected Files" Height="400" Width="600">
+        Title="Selected Files" Height="500" Width="600"
+        WindowStartupLocation="CenterScreen"
+        >
     <Grid>
         <ListView ItemsSource="{Binding SelectedFiles}">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="File Name" Width="250" DisplayMemberBinding="{Binding FileName}"/>
-                    <GridViewColumn Header="Size (KB)" Width="100" DisplayMemberBinding="{Binding Size}"/>
-                    <GridViewColumn Header="Extension" Width="50" DisplayMemberBinding="{Binding Extension}"/>
-                    <GridViewColumn Header="Date Modified" Width="150" DisplayMemberBinding="{Binding DateModified}"/>
-                    <GridViewColumn Header="Directory" Width="300" DisplayMemberBinding="{Binding Directory}"/>
+                    <GridViewColumn Header="File Name" Width="250" DisplayMemberBinding="{Binding FileName}" />
+                    <GridViewColumn Header="New File Name" Width="250" DisplayMemberBinding="{Binding NewFileName}" />
+                    <GridViewColumn Header="Size (KB)" Width="100" DisplayMemberBinding="{Binding Size}" />
+                    <GridViewColumn Header="Extension" Width="50" DisplayMemberBinding="{Binding Extension}" />
+                    <GridViewColumn Header="Date Modified" Width="150" DisplayMemberBinding="{Binding DateModified}" />
+                    <GridViewColumn Header="Directory" Width="300" DisplayMemberBinding="{Binding Directory}" />
                 </GridView>
             </ListView.View>
         </ListView>

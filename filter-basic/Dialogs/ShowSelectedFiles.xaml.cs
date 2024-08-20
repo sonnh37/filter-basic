@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
+using filter_basic.Models;
 
 namespace filter_basic.Dialogs;
 

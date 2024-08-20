@@ -7,7 +7,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using filter_basic.Dialogs;
+using filter_basic.Models;
 
 namespace filter_basic
 {
@@ -16,7 +18,7 @@ namespace filter_basic
         // ObservableCollections for binding to ListView
         public ObservableCollection<FileItem> Files { get; set; } = new ObservableCollection<FileItem>();
         public ObservableCollection<FileItem> _filesTemporary { get; set; } = new ObservableCollection<FileItem>();
-        private ObservableCollection<FileItem> _selectedFiles = new ObservableCollection<FileItem>();
+        public ObservableCollection<FileItem> _selectedFiles = new ObservableCollection<FileItem>();
         
         private string _currentSortProperty;
         private ListSortDirection _currentSortDirection;
@@ -210,8 +212,8 @@ namespace filter_basic
             {
                 var fileItem = new FileItem
                 {
-                    FileName = file.Name,
-                    NewFileName = file.Name,
+                    FileName = Path.GetFileNameWithoutExtension(file.Name), // Lấy phần tên mà không có phần mở rộng
+                    NewFileName = "",
                     Size = (file.Length / 1024).ToString(),
                     Extension = file.Extension,
                     DateModified = file.LastWriteTime.ToString(),
@@ -254,32 +256,80 @@ namespace filter_basic
         // Rename Files
         private void RenameButton_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var file in Files.Where(f => f.IsChecked))
+            if (!CheckSelectedFiles()) return;
+
+            var dialog = new RenameDialog();
+            if (dialog.ShowDialog() == true)
             {
-                var oldPath = Path.Combine(file.Directory, file.FileName);
-                var newPath = Path.Combine(file.Directory, file.NewFileName);
+                string baseName = dialog.BaseName;
+                string code = dialog.Code;
+                int counter = 1;
+
+                foreach (var file in _selectedFiles)
+                {
+                    string newFileName = $"{baseName}{code}{counter++}";
+                    var fileItem = _filesTemporary.SingleOrDefault(m => m.FileName == file.FileName);
+                    if (fileItem != null)
+                    {
+                        fileItem.NewFileName = newFileName;
+                    }
+                }
+            }
+        }
+
+
+        private void RenameFilesInFolderPath()
+        {
+            foreach (var file in _selectedFiles)
+            {
+                // Lấy phần mở rộng của file từ FileName
+                string extension = Path.GetExtension(file.Extension);
+        
+                // Ghép lại phần mở rộng vào NewFileName trước khi thực hiện rename
+                var oldPath = Path.Combine(file.Directory, $"{file.FileName}{extension}");
+                var newPath = Path.Combine(file.Directory, $"{file.NewFileName}{extension}");
+        
                 if (File.Exists(oldPath))
                 {
                     File.Move(oldPath, newPath);
+                    file.FileName = file.NewFileName;
                 }
             }
             MessageBox.Show("Files renamed successfully!");
-            LoadFiles(FolderPath);
-        }
+            // Lưu lại các file đã được chọn trước khi LoadFiles
+            var selectedFiles = _selectedFiles.ToList();
 
+            // Load lại Files
+            LoadFiles(FolderPath);
+
+            // Cập nhật lại _selectedFiles dựa trên danh sách mới
+            _selectedFiles.Clear();
+            foreach (var file in selectedFiles)
+            {
+                var updatedFile = _filesTemporary.SingleOrDefault(f => f.FileName == file.FileName);
+                if (updatedFile != null)
+                {
+                    updatedFile.IsChecked = true; // Đảm bảo giữ lại trạng thái tích chọn
+                    _selectedFiles.Add(updatedFile); // Thêm lại vào _selectedFiles
+                }
+            }
+        }
         // Copy Files
         private void CopyButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!CheckSelectedFiles()) return;
+            
             if (string.IsNullOrEmpty(CopyToPath) || !Directory.Exists(CopyToPath))
             {
                 MessageBox.Show("Invalid destination folder.");
                 return;
             }
 
-            foreach (var file in Files.Where(f => f.IsChecked))
+            foreach (var file in _selectedFiles)
             {
-                var sourcePath = Path.Combine(file.Directory, file.FileName);
-                var destinationPath = Path.Combine(CopyToPath, file.FileName);
+                var sourcePath = Path.Combine(file.Directory, file.FileName + file.Extension);
+                var destinationPath = Path.Combine(CopyToPath, file.NewFileName != "" ? (file.NewFileName + file.Extension) : 
+                    (file.FileName + file.Extension));
                 if (File.Exists(sourcePath))
                 {
                     File.Copy(sourcePath, destinationPath);
@@ -288,22 +338,24 @@ namespace filter_basic
 
             _selectedFiles = [];
             MessageBox.Show("Files copied successfully!");
-            
+            LoadFiles(FolderPath);
         }
 
         // Move Files
         private void MoveButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!CheckSelectedFiles()) return;
+            
             if (string.IsNullOrEmpty(CopyToPath) || !Directory.Exists(CopyToPath))
             {
                 MessageBox.Show("Invalid destination folder.");
                 return;
             }
 
-            foreach (var file in Files.Where(f => f.IsChecked))
+            foreach (var file in _selectedFiles)
             {
                 var sourcePath = Path.Combine(file.Directory, file.FileName);
-                var destinationPath = Path.Combine(CopyToPath, file.FileName);
+                var destinationPath = Path.Combine(CopyToPath, file.NewFileName != "" ? file.NewFileName : file.FileName);
                 if (File.Exists(sourcePath))
                 {
                     File.Move(sourcePath, destinationPath);
@@ -371,17 +423,53 @@ namespace filter_basic
             var propertyInfo = item.GetType().GetProperty(propertyName);
             return propertyName == "IsChecked" ? (object)(item.IsChecked ? 1 : 0) : propertyInfo?.GetValue(item, null);
         }
+
+        private void ApplyButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!CheckSelectedFiles()) return;
+            if (!CheckAllFilesHaveNewNames()) return;
+            RenameFilesInFolderPath();
+        }
+        
+        private bool CheckAllFilesHaveNewNames()
+        {
+            if (_selectedFiles.Any(file => string.IsNullOrEmpty(file.NewFileName)))
+            {
+                MessageBox.Show("All selected files must have a new name assigned.");
+                return false;
+            }
+            return true;
+        }
+        private bool CheckSelectedFiles()
+        {
+            if (_selectedFiles == null || !_selectedFiles.Any())
+            {
+                MessageBox.Show("Please select at least one file.");
+                return false;
+            }
+            return true;
+        }
+
+        private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Kiểm tra xem người dùng có nhấp đúp vào một item không
+            if (sender is ListView listView && listView.SelectedItem is FileItem selectedFile)
+            {
+                // Lấy đường dẫn đầy đủ của tệp tin (bao gồm tên tệp và phần mở rộng)
+                string filePath = Path.Combine(selectedFile.Directory, selectedFile.FileName + selectedFile.Extension);
+
+                // Mở tệp tin hình ảnh
+                if (File.Exists(filePath))
+                {
+                    System.Diagnostics.Process.Start("explorer.exe", filePath);
+                }
+                else
+                {
+                    MessageBox.Show("File does not exist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
     }
 
-    // FileItem class for binding data to ListView
-    public class FileItem
-    {
-        public bool IsChecked { get; set; }
-        public string FileName { get; set; }
-        public string NewFileName { get; set; }
-        public string Size { get; set; }
-        public string Extension { get; set; }
-        public string DateModified { get; set; }
-        public string Directory { get; set; }
-    }
 }
