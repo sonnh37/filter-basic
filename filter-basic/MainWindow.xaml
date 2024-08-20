@@ -6,129 +6,135 @@
         xmlns:local="clr-namespace:filter_basic"
         mc:Ignorable="d"
         Title="File Manager" Height="600" Width="1200"
-        WindowStartupLocation="CenterScreen"
-        >
-    
+        WindowStartupLocation="CenterScreen">
+
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/> <!-- Left side (TreeView) -->
-            <ColumnDefinition Width="*"/>   <!-- Right side (Main content) -->
+            <ColumnDefinition Width="200" /> <!-- Left side (TreeView) -->
+            <ColumnDefinition Width="*" />   <!-- Right side (Main content) -->
         </Grid.ColumnDefinitions>
 
         <!-- Left TreeView -->
         <TreeView Grid.Column="0" Name="myTreeView" SelectedItemChanged="myTreeView_SelectedItemChanged" Margin="10">
-            
+
         </TreeView>
 
         <!-- Right Main Area -->
         <Grid Grid.Column="1" Margin="5">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Folder paths and options -->
-                <RowDefinition Height="*"/>    <!-- File list -->
+                <RowDefinition Height="Auto" /> <!-- Folder paths and options -->
+                <RowDefinition Height="*" />    <!-- File list -->
             </Grid.RowDefinitions>
 
             <!-- Folder Paths and Controls -->
             <StackPanel Orientation="Vertical" Grid.Row="0">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                    <TextBlock Text="Folder:" VerticalAlignment="Center"/>
-                    <TextBox Width="500" Margin="5,0" Text="{Binding FolderPath, UpdateSourceTrigger=PropertyChanged}"/>
-                    <Button Content="Browse" Width="75" Click="Browse_Click"/>
-                    
+                    <TextBlock Text="Folder:" VerticalAlignment="Center" />
+                    <TextBox Width="500" Margin="5,0" Text="{Binding FolderPath, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Content="Browse" Width="75" Click="Browse_Click" />
+
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                    <TextBlock Text="Copy To:" VerticalAlignment="Center"/>
-                    <TextBox Width="500" Margin="5,0" Text="{Binding CopyToPath, UpdateSourceTrigger=PropertyChanged}"/>
-                    <Button Content="Browse To" Width="75" Click="BrowseTo_Click"/>
+                    <TextBlock Text="Copy To:" VerticalAlignment="Center" />
+                    <TextBox Width="500" Margin="5,0" Text="{Binding CopyToPath, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Content="Browse To" Width="75" Click="BrowseTo_Click" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                    <TextBlock Text="Filename Filter:" VerticalAlignment="Center"/>
-                    <TextBox Width="150" Margin="5,0" Text="{Binding FilenameFilter, UpdateSourceTrigger=PropertyChanged}" TextChanged="FilenameFilter_TextChanged"/>
+                    <TextBlock Text="Filename Filter:" VerticalAlignment="Center" />
+                    <TextBox Width="150" Margin="5,0"
+                             Text="{Binding FilenameFilter, UpdateSourceTrigger=PropertyChanged}"
+                             TextChanged="FilenameFilter_TextChanged" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                    <TextBlock Text="Rename:" VerticalAlignment="Center"/>
-                    <Button Content="Rename" Width="75" Margin="10,0" Click="RenameButton_Click"/>
-                    <Button Content="Apply" Width="75" Margin="10,0" Click="ApplyButton_Click"/>
+                    <TextBlock Text="Rename:" VerticalAlignment="Center" />
+                    <Button Content="Rename" Width="75" Margin="10,0" Click="RenameButton_Click" />
+                    <Button Content="Apply" Width="75" Margin="10,0" Click="ApplyButton_Click" />
                 </StackPanel>
-                
+
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                    <TextBlock Text="Edit:" VerticalAlignment="Center"/>
-                    <Button Content="Copy" Width="75" Margin="10,0" Click="CopyButton_Click"/>
-                    <Button Content="Move" Width="75" Click="MoveButton_Click"/>
-                    <Button Content="Show Selected Files" Margin="10,0" Width="150" Click="ShowSelectedFiles_Click"/>
+                    <TextBlock Text="Edit:" VerticalAlignment="Center" />
+                    <Button Content="Copy" Width="75" Margin="10,0" Click="CopyButton_Click" />
+                    <Button Content="Move" Width="75" Click="MoveButton_Click" />
+                    <Button Content="Show Selected Files" Margin="10,0" Width="150" Click="ShowSelectedFiles_Click" />
                 </StackPanel>
             </StackPanel>
 
             <!-- File List -->
-            <ListView Grid.Row="1" MouseDoubleClick="ListView_MouseDoubleClick" Margin="0,5,0,0" ItemsSource="{Binding _filesTemporary}">
+            <ListView x:Name="FilesListView" Grid.Row="1" MouseDoubleClick="ListView_MouseDoubleClick" Margin="0,5,0,0"
+                      ItemsSource="{Binding _filesTemporary}">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header=" " Width="30">
+                        <GridViewColumn Width="30">
+                            <GridViewColumn.Header>
+                                <CheckBox x:Name="HeaderCheckBox"
+                                          Checked="HeaderCheckBox_Checked"
+                                          Unchecked="HeaderCheckBox_Unchecked"
+                                          Content=" " />
+                            </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Checked="FileItem_Checked" Unchecked="FileItem_Unchecked"/>
+                                    <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" 
+                                              Checked="FileItem_Checked" 
+                                              Unchecked="FileItem_Unchecked"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <GridViewColumn Header="File Name" Width="250" DisplayMemberBinding="{Binding FileName}">
                             <GridViewColumn.HeaderContainerStyle>
                                 <Style TargetType="GridViewColumnHeader">
-                                    <EventSetter Event="Click" Handler="ColumnHeader_Click"/>
+                                    <EventSetter Event="Click" Handler="ColumnHeader_Click" />
                                 </Style>
                             </GridViewColumn.HeaderContainerStyle>
                         </GridViewColumn>
 
-            <GridViewColumn Header="File Name" Width="250" DisplayMemberBinding="{Binding FileName}">
-                <GridViewColumn.HeaderContainerStyle>
-                    <Style TargetType="GridViewColumnHeader">
-                        <EventSetter Event="Click" Handler="ColumnHeader_Click"/>
-                    </Style>
-                </GridViewColumn.HeaderContainerStyle>
-            </GridViewColumn>
+                        <GridViewColumn Header="New File Name" Width="250" DisplayMemberBinding="{Binding NewFileName}">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="GridViewColumnHeader">
+                                    <EventSetter Event="Click" Handler="ColumnHeader_Click" />
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                        </GridViewColumn>
 
-            <GridViewColumn Header="New File Name" Width="250" DisplayMemberBinding="{Binding NewFileName}">
-                <GridViewColumn.HeaderContainerStyle>
-                    <Style TargetType="GridViewColumnHeader">
-                        <EventSetter Event="Click" Handler="ColumnHeader_Click"/>
-                    </Style>
-                </GridViewColumn.HeaderContainerStyle>
-            </GridViewColumn>
+                        <GridViewColumn Header="Size (KB)" Width="100" DisplayMemberBinding="{Binding Size}">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="GridViewColumnHeader">
+                                    <EventSetter Event="Click" Handler="ColumnHeader_Click" />
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                        </GridViewColumn>
 
-            <GridViewColumn Header="Size (KB)" Width="100" DisplayMemberBinding="{Binding Size}">
-                <GridViewColumn.HeaderContainerStyle>
-                    <Style TargetType="GridViewColumnHeader">
-                        <EventSetter Event="Click" Handler="ColumnHeader_Click"/>
-                    </Style>
-                </GridViewColumn.HeaderContainerStyle>
-            </GridViewColumn>
+                        <GridViewColumn Header="Ext" Width="50" DisplayMemberBinding="{Binding Extension}">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="GridViewColumnHeader">
+                                    <EventSetter Event="Click" Handler="ColumnHeader_Click" />
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                        </GridViewColumn>
 
-            <GridViewColumn Header="Ext" Width="50" DisplayMemberBinding="{Binding Extension}">
-                <GridViewColumn.HeaderContainerStyle>
-                    <Style TargetType="GridViewColumnHeader">
-                        <EventSetter Event="Click" Handler="ColumnHeader_Click"/>
-                    </Style>
-                </GridViewColumn.HeaderContainerStyle>
-            </GridViewColumn>
+                        <GridViewColumn Header="Date Modified" Width="150"
+                                        DisplayMemberBinding="{Binding DateModified}">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="GridViewColumnHeader">
+                                    <EventSetter Event="Click" Handler="ColumnHeader_Click" />
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                        </GridViewColumn>
 
-            <GridViewColumn Header="Date Modified" Width="150" DisplayMemberBinding="{Binding DateModified}">
-                <GridViewColumn.HeaderContainerStyle>
-                    <Style TargetType="GridViewColumnHeader">
-                        <EventSetter Event="Click" Handler="ColumnHeader_Click"/>
-                    </Style>
-                </GridViewColumn.HeaderContainerStyle>
-            </GridViewColumn>
-
-            <GridViewColumn Header="Directory" Width="300" DisplayMemberBinding="{Binding Directory}">
-                <GridViewColumn.HeaderContainerStyle>
-                    <Style TargetType="GridViewColumnHeader">
-                        <EventSetter Event="Click" Handler="ColumnHeader_Click"/>
-                    </Style>
-                </GridViewColumn.HeaderContainerStyle>
-            </GridViewColumn>
+                        <GridViewColumn Header="Directory" Width="300" DisplayMemberBinding="{Binding Directory}">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="GridViewColumnHeader">
+                                    <EventSetter Event="Click" Handler="ColumnHeader_Click" />
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                        </GridViewColumn>
                     </GridView>
                 </ListView.View>
             </ListView>
         </Grid>
-        
+
     </Grid>
 </Window>
