@@ -339,6 +339,45 @@ namespace filter_basic
                 return;
             }
 
+            // Hiển thị thông báo xác nhận trước khi sao chép
+            var result = MessageBox.Show("Are you sure you want to copy all selected files to the new folder?",
+                "Confirm Copy",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                // Nếu người dùng chọn "No", thoát khỏi phương thức
+                return;
+            }
+
+            // Kiểm tra file nào đã có NewFileName và yêu cầu người dùng lựa chọn
+            bool hasNewFileName = _selectedFiles.Any(file => !string.IsNullOrEmpty(file.NewFileName));
+            if (hasNewFileName)
+            {
+                var newNameResult = MessageBox.Show(
+                    "Some files have new names. Do you want to Copy with new names or keep the original names?",
+                    "File Name Conflict",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Question);
+
+                if (newNameResult == MessageBoxResult.Cancel)
+                {
+                    // Người dùng hủy bỏ quá trình
+                    return;
+                }
+
+                // Điều chỉnh hành vi dựa trên lựa chọn của người dùng
+                if (newNameResult == MessageBoxResult.No)
+                {
+                    // Giữ tên gốc của file (bỏ qua NewFileName)
+                    foreach (var file in _selectedFiles)
+                    {
+                        file.NewFileName = string.Empty;
+                    }
+                }
+            }
+
             // Kiểm tra xung đột tên file
             var conflicts = new List<FileConflict>();
             foreach (var file in _selectedFiles)
@@ -464,6 +503,46 @@ namespace filter_basic
             {
                 MessageBox.Show("Invalid destination folder.");
                 return;
+            }
+
+
+            // Hiển thị thông báo xác nhận trước khi sao chép
+            var result = MessageBox.Show("Are you sure you want to cut all selected files to the new folder?",
+                "Confirm Cut",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                // Nếu người dùng chọn "No", thoát khỏi phương thức
+                return;
+            }
+
+            // Kiểm tra file nào đã có NewFileName và yêu cầu người dùng lựa chọn
+            bool hasNewFileName = _selectedFiles.Any(file => !string.IsNullOrEmpty(file.NewFileName));
+            if (hasNewFileName)
+            {
+                var newNameResult = MessageBox.Show(
+                    "Some files have new names. Do you want to Cut with new names or keep the original names?",
+                    "File Name Conflict",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Question);
+
+                if (newNameResult == MessageBoxResult.Cancel)
+                {
+                    // Người dùng hủy bỏ quá trình
+                    return;
+                }
+
+                // Điều chỉnh hành vi dựa trên lựa chọn của người dùng
+                if (newNameResult == MessageBoxResult.No)
+                {
+                    // Giữ tên gốc của file (bỏ qua NewFileName)
+                    foreach (var file in _selectedFiles)
+                    {
+                        file.NewFileName = string.Empty;
+                    }
+                }
             }
 
             // Kiểm tra xung đột tên file
@@ -652,6 +731,19 @@ namespace filter_basic
         {
             if (!CheckSelectedFiles()) return;
             if (!CheckAllFilesHaveNewNames()) return;
+
+            // Hiển thị thông báo xác nhận trước khi sao chép
+            var result = MessageBox.Show("Are you sure you want to rename all selected files in the folder:" + FolderPath+ " ?",
+                "Confirm Copy",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                // Nếu người dùng chọn "No", thoát khỏi phương thức
+                return;
+            }
+
             RenameFilesInFolderPath();
         }
 
@@ -705,6 +797,11 @@ namespace filter_basic
                 if (item is FileItem fileItem)
                 {
                     fileItem.IsChecked = true;
+                    if (!_selectedFiles.Contains(fileItem))
+                    {
+                        // Nếu chưa, thêm fileItem vào danh sách _selectedFiles
+                        _selectedFiles.Add(fileItem);
+                    }
                 }
             }
         }
@@ -717,7 +814,59 @@ namespace filter_basic
                 if (item is FileItem fileItem)
                 {
                     fileItem.IsChecked = false;
+                    _selectedFiles.Remove(fileItem);
                 }
+            }
+        }
+
+        private void OkButton_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string BaseName { get; private set; }
+
+        private void ReviewButton_Click(object sender, RoutedEventArgs e)
+        {
+            BaseName = BaseNameTextBox.Text;
+
+            if (!CheckSelectedFiles()) return;
+            int counter = 1;
+
+            foreach (var file in _selectedFiles)
+            {
+                string newFileName = $"{BaseName}{counter++}";
+                var fileItem = _filesTemporary.SingleOrDefault(m => m.FileName == file.FileName);
+                if (fileItem != null)
+                {
+                    fileItem.NewFileName = newFileName;
+                }
+            }
+        }
+
+        private void OpenFolder_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(FolderPath) && Directory.Exists(FolderPath))
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+                {
+                    FileName = FolderPath,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+            }
+        }
+
+        private void OpenFolderTo_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(FolderPath) && Directory.Exists(FolderPath))
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+                {
+                    FileName = CopyToPath,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
             }
         }
     }
